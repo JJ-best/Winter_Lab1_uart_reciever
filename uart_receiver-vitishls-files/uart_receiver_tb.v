@@ -1,4 +1,5 @@
-`include "uart_reciever.v"
+`include "uart_receiver.v"
+`include "baud_rate_generator.v"
 `timescale  1ns / 1ps
 
 module tb_uart_receiver;
@@ -12,7 +13,7 @@ reg [9:0]in_data = {1'b1, 8'b01001011, 1'b0};
 
 // uart_receiver Inputs
 reg uart_rx = 0 ;
-reg baud_rate_signal = 0 ;
+wire baud_rate_signal ;
 reg clk = 0 ;
 reg rst = 1 ;
 
@@ -33,11 +34,17 @@ uart_receiver #(
     .idle ( idle ))
  u_uart_receiver (
     .uart_rx(uart_rx),
-    .baud_rate_signal( baud_rate_signal),
+    .baud_rate_signal(baud_rate_signal),
     .clk(clk),
     .rst(rst),
     .data(data[7:0]),
     .valid_data(valid_data)
+);
+
+baud_rate_generator u_baud_rate_generator (
+    .clk(clk),
+    .rst(rst),
+    .baud_rate_signal(baud_rate_signal)
 );
 
 initial begin
@@ -54,14 +61,7 @@ begin
 end
 
 
-//buad_rate_signal
-initial begin
-    wait(rst == 1);
-    wait(rst == 0);
-    forever begin
-        #(PERIOD)baud_rate_signal = ~baud_rate_signal; //
-    end
-end
+
 
 initial begin
     wait(rst == 1);
@@ -75,6 +75,8 @@ initial begin
     end else begin
         $display("wrong");
     end
+
+    #(100*PERIOD);
     $finish;
 end
 
