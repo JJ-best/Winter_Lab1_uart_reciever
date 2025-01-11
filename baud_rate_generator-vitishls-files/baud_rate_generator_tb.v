@@ -13,7 +13,7 @@ reg [13:0]count_clk = 14'd20;
 // baud_rate_generator Inputs
 reg clk = 0;
 reg count_en = 0;
-reg rst = 0;
+reg rst;
 
 // baud_rate_generator Outputs
 wire  baud_rate_signal                     ;

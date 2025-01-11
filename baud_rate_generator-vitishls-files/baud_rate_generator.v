@@ -13,7 +13,7 @@ module baud_rate_generator (
         end else if (count_en) begin
             count <= count - 1;
         end else begin
-            count <= count;                 //可以不用寫，只是為了整齊
+            count <= count;                 //可以不用寫，只是為了整齊(1/9:需要寫不然會有latch)
         end
     end
     assign baud_rate_signal = (count == 0); //當數到0，輸出高電平

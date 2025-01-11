@@ -10,6 +10,7 @@ parameter idle  = 0;
 
 //output of TX = input of RX
 reg [9:0]in_data = {1'b1, 8'b01001011, 1'b0};
+//random data pattern or for-loop.
 
 // uart_receiver Inputs
 reg uart_rx = 0 ;
@@ -66,7 +67,8 @@ end
 initial begin
     wait(rst == 1);
     wait(rst == 0);
-    for (i = 0; i < 10; i = i + 1) begin
+    for (i = 0; i < 10; i = i + 1) begin 
+        //race condition, dont recieve signal at the same clk tranmitter transmit the signal.
         @(posedge baud_rate_signal) uart_rx = in_data[i];
     end
 
