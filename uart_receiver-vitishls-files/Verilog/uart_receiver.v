@@ -8,20 +8,20 @@ module uart_receiver (
 );
 
 parameter idle = 0, receive = 1;                //receiver state
-reg [3:0]bit_counter = 0;                       //計算start-bit後收到幾個uart_rx，應該要可以收8-bit
+reg [3:0]bit_counter = 0;                       //count how many bit is recieve
 reg state = idle;
 
 reg [3:0]next_bit_counter = 0;
 reg next_state = 0;
 reg stop_bit;
-reg valid_data_local;                           //標示數據是否接收完全。
-reg [7:0]d = 0;                                     //data
+reg valid_data_local;                           //if recieve complete, valid_data = 1
+reg [7:0]d = 0;                                 //input data
 
 always @(*) begin
     case (state)
-        idle: begin                             //閒置狀態
+        idle: begin                             //idle state
             if (baud_rate_signal == 1) begin
-                if (uart_rx == 0) begin         //接收到start-bit
+                if (uart_rx == 0) begin         //recieve start-bit(0)
                     next_state = receive;
                 end else begin
                     next_state = state;
@@ -29,25 +29,25 @@ always @(*) begin
             end else begin
                 next_state = idle;
             end
-            valid_data_local = 0;               //不接收數據
-            next_bit_counter = 0;               //重制bit-counter
+            valid_data_local = 0;               //recieve not complete
+            next_bit_counter = 0;               //reset bit-counter
         end
         receive: begin
             if (baud_rate_signal == 1) begin
-                if (bit_counter == 4'd8) begin  //數到第八位了，所以這一位是stop-bit
+                if (bit_counter == 4'd8) begin  //if count to bit-8, the next bit should be stop-bit
                     stop_bit = uart_rx;
-                    if (stop_bit == 1) begin    //正確停止位
-                        valid_data_local = 1;   //資料接收完畢
+                    if (stop_bit == 1) begin    //stop-bit should be 1
+                        valid_data_local = 1;   //data recieving complete
                     end else begin
-                        valid_data_local = 0;   //資料無效
+                        valid_data_local = 0;   //data recieve wrong
                     end
-                    next_bit_counter = 0;       //歸零
+                    next_bit_counter = 0;       //reset bit-counter
                     next_state = idle;
-                end else begin                  //還沒數到第八位，可以接收資料
+                end else begin                  //didn't count to bit-8, keep recieve data
                     d[bit_counter] = uart_rx;
                     next_bit_counter = bit_counter + 1;
                     next_state = receive;
-                    valid_data_local = 0;       //數據尚未接收完畢
+                    valid_data_local = 0;       //data recieving didn't complete 
                 end
             end else begin
                 next_bit_counter = bit_counter;
